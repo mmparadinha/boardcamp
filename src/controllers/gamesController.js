@@ -8,11 +8,11 @@ export async function listGames(req, res) {
 
         if (!gameName) {
             games = await connection.query(`
-                SELECT games.*, categories.name as "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id
+                SELECT games.*, categories.name as "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id;
             `);
         } else {
             games = await connection.query(`
-                SELECT games.*, categories.name as "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id WHERE LOWER(games.name) LIKE LOWER($1)
+                SELECT games.*, categories.name as "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id WHERE LOWER(games.name) LIKE LOWER($1);
             `, [gameName + '%']);
         }
 
@@ -36,17 +36,17 @@ export async function createGame(req, res) {
 
     try {
         const categoryExists = await connection.query(`
-            SELECT * FROM categories WHERE id=$1
+            SELECT * FROM categories WHERE id=$1;
         `, [categoryId]);
         if (!categoryExists.rows[0]) { return res.sendStatus(400) };
 
         const gameExists = await connection.query(`
-            SELECT * FROM games WHERE name=$1
+            SELECT * FROM games WHERE name=$1;
         `, [name]);
         if (gameExists.rows[0]) { return res.sendStatus(409) };
 
         await connection.query(`
-            INSERT INTO games (name, image, "stockTotal", "categoryId", "pricePerDay") VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO games (name, image, "stockTotal", "categoryId", "pricePerDay") VALUES ($1, $2, $3, $4, $5);
         `, [name, image, stockTotal, categoryId, pricePerDay]);
         res.sendStatus(201);
 
