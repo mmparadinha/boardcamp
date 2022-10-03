@@ -2,13 +2,15 @@ import connection from '../database/database.js';
 import { stripHtml } from 'string-strip-html';
 
 export async function listCategories (req, res) {
-    const { order, desc } = req.query;
+    const { order, desc, offset, limit } = req.query;
 
     try {
         const categories = await connection.query(`
             SELECT * FROM categories
                 ${order ? `ORDER BY ${order}` : ''}
-                ${desc ? `DESC` : ''};
+                ${desc ? `DESC` : ''}
+                ${limit ? `LIMIT ${limit}` : ''}
+                ${offset ? `OFFSET ${offset}` : ''};
         `);
 
         if (!categories.rows[0]) {

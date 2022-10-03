@@ -2,7 +2,7 @@ import { stripHtml } from 'string-strip-html';
 import connection from '../database/database.js';
 
 export async function listAllCustomers(req, res) {
-    const { cpf, order, desc } = req.query;
+    const { cpf, order, desc, limit, offset } = req.query;
 
     try {
         let customers = [];
@@ -14,8 +14,10 @@ export async function listAllCustomers(req, res) {
                     COUNT("customerId") AS "rentalsCount"
                 FROM rentals JOIN customers ON customers.id=rentals."customerId"
                 GROUP BY customers.id
-                ${order ? `ORDER BY ${order}` : ''}
-                ${desc ? `DESC` : ''};
+                    ${order ? `ORDER BY ${order}` : ''}
+                    ${desc ? `DESC` : ''}
+                    ${limit ? `LIMIT ${limit}` : ''}
+                    ${offset ? `OFFSET ${offset}` : ''};
             `);
         } else {
             customers = await connection.query(`
@@ -25,8 +27,10 @@ export async function listAllCustomers(req, res) {
                 FROM rentals JOIN customers ON customers.id=rentals."customerId"
                 WHERE customers.cpf LIKE $1
                 GROUP BY customers.id
-                ${order ? `ORDER BY ${order}` : ''}
-                ${desc ? `DESC` : ''};
+                    ${order ? `ORDER BY ${order}` : ''}
+                    ${desc ? `DESC` : ''}
+                    ${limit ? `LIMIT ${limit}` : ''}
+                    ${offset ? `OFFSET ${offset}` : ''};
             `, [cpf + '%']);
         }
 
