@@ -1,3 +1,4 @@
+import { stripHtml } from 'string-strip-html';
 import connection from '../database/database.js';
 
 export async function listAllCustomers(req, res) {
@@ -49,7 +50,9 @@ export async function listSingleCustomer(req, res) {
 }
 
 export async function insertCustomer(req, res) {
-    const { name, phone, cpf, birthday } = req.body;
+    const { phone, cpf, birthday } = req.body;
+    const customerName = stripHtml(req.body.name.trim()).result;
+
 
     try {
         const customerExists = await connection.query(`
@@ -59,7 +62,7 @@ export async function insertCustomer(req, res) {
 
         await connection.query(`
             INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1, $2, $3, $4);
-        `, [name, phone, cpf, birthday]);
+        `, [customerName, phone, cpf, birthday]);
         res.sendStatus(201);
 
     } catch (err) {
@@ -70,7 +73,8 @@ export async function insertCustomer(req, res) {
 
 export async function updateCustomer(req, res) {
     const { id } = req.params;
-    const { name, phone, cpf, birthday } = req.body;
+    const { phone, cpf, birthday } = req.body;
+    const customerName = stripHtml(req.body.name.trim()).result;
 
     try {
         const customerExists = await connection.query(`
@@ -80,7 +84,7 @@ export async function updateCustomer(req, res) {
 
         await connection.query(`
             UPDATE customers SET name=$1, phone=$2, cpf=$3, birthday=$4 WHERE id=$5;
-        `, [name, phone, cpf, birthday, id]);
+        `, [customerName, phone, cpf, birthday, id]);
         res.sendStatus(200);
 
     } catch (err) {

@@ -1,7 +1,8 @@
 import connection from '../database/database.js';
+import { stripHtml } from 'string-strip-html';
 
 export async function listGames(req, res) {
-    const gameName = req.query.name;
+    const gameName = stripHtml(req.query.name).result;
 
     try {
         let games = [];
@@ -29,9 +30,12 @@ export async function listGames(req, res) {
 }
 
 export async function createGame(req, res) {
-    const { name, image, stockTotal, categoryId, pricePerDay } = req.body;
+    const { stockTotal, categoryId, pricePerDay } = req.body;
+    const gameName = stripHtml(req.body.name).result;
+    const gameImage = stripHtml(req.body.image).result;
 
-    if (!name) { return res.sendStatus(400) };
+
+    if (!gameName) { return res.sendStatus(400) };
     if (stockTotal <= 0 || pricePerDay <= 0) { return res.sendStatus(400) };
 
     try {
@@ -42,12 +46,12 @@ export async function createGame(req, res) {
 
         const gameExists = await connection.query(`
             SELECT * FROM games WHERE name=$1;
-        `, [name]);
+        `, [gameName]);
         if (gameExists.rows[0]) { return res.sendStatus(409) };
 
         await connection.query(`
             INSERT INTO games (name, image, "stockTotal", "categoryId", "pricePerDay") VALUES ($1, $2, $3, $4, $5);
-        `, [name, image, stockTotal, categoryId, pricePerDay]);
+        `, [gameName, gameImage, stockTotal, categoryId, pricePerDay]);
         res.sendStatus(201);
 
     } catch (err) {

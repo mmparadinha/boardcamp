@@ -25,7 +25,21 @@ export async function listAllRentals(req, res) {
             `);
         } else {
             rentals = await connection.query(`
-                SELECT * FROM rentals WHERE rentals."customerId"=$1 OR rentals."gameId"=$2;
+                SELECT 
+                    rentals.*,
+                    json_build_object(
+                        'id', customers.id,
+                        'name', customers.name
+                    ) as customer,
+                    json_build_object(
+                        'id', games.id,
+                        'name', games.name,
+                        'categoryId', games."categoryId",
+                        'categoryName', (SELECT categories.name FROM categories WHERE games."categoryId"=categories.id)
+                    ) as game FROM rentals
+                        JOIN customers ON rentals."customerId"=customers.id
+                        JOIN games ON rentals."gameId"=games.id
+                WHERE rentals."customerId"=$1 OR rentals."gameId"=$2;
             `, [customerId, gameId]);
         }
 

@@ -12,7 +12,8 @@
     "dotenv": "^16.0.2",
     "express": "^4.17.1",
     "joi": "^17.6.2",
-    "pg": "^8.6.0"
+    "pg": "^8.6.0",
+    "string-strip-html": "^11.6.9"
   },
   "author": "",
   "license": "ISC",

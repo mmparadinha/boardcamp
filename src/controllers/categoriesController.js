@@ -1,4 +1,5 @@
 import connection from '../database/database.js';
+import { stripHtml } from 'string-strip-html';
 
 export async function listCategories (req, res) {
     try {
@@ -19,7 +20,7 @@ export async function listCategories (req, res) {
 }
 
 export async function createCategory (req, res) {
-    const categoryName = req.body.name.trim();
+    const categoryName = stripHtml(req.body.name.trim()).result;
 
     if (!categoryName) {return res.sendStatus(400)};
 
