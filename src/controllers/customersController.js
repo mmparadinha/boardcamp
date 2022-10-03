@@ -2,7 +2,7 @@ import { stripHtml } from 'string-strip-html';
 import connection from '../database/database.js';
 
 export async function listAllCustomers(req, res) {
-    const { cpf } = req.query;
+    const { cpf, order, desc } = req.query;
 
     try {
         let customers = [];
@@ -13,7 +13,9 @@ export async function listAllCustomers(req, res) {
                     customers.*,
                     COUNT("customerId") AS "rentalsCount"
                 FROM rentals JOIN customers ON customers.id=rentals."customerId"
-                GROUP BY customers.id;
+                GROUP BY customers.id
+                ${order ? `ORDER BY ${order}` : ''}
+                ${desc ? `DESC` : ''};
             `);
         } else {
             customers = await connection.query(`
@@ -22,7 +24,9 @@ export async function listAllCustomers(req, res) {
                     COUNT("customerId") AS "rentalsCount"
                 FROM rentals JOIN customers ON customers.id=rentals."customerId"
                 WHERE customers.cpf LIKE $1
-                GROUP BY customers.id;
+                GROUP BY customers.id
+                ${order ? `ORDER BY ${order}` : ''}
+                ${desc ? `DESC` : ''};
             `, [cpf + '%']);
         }
 
@@ -43,21 +47,19 @@ export async function listSingleCustomer(req, res) {
 
     try {
         const customer = await connection.query(`
-            SELECT * FROM customers WHERE customers.id=$1;
+            SELECT
+                customers.*,
+                COUNT("customerId") AS "rentalsCount"
+            FROM rentals JOIN customers ON customers.id=rentals."customerId"
+            WHERE customers.id=$1
+            GROUP BY customers.id;
         `, [id]);
 
         if (!customer.rows[0]) {
             return res.sendStatus(404);
         }
 
-        const rentalsCount = await connection.query(`
-            SELECT COUNT("customerId") FROM rentals WHERE rentals."customerId"=$1;
-        `, [id]);
-
-        res.send({
-            ...customer.rows[0],
-            rentalsCount: rentalsCount.rows[0].count
-        });
+        res.send(customer.rows[0]);
 
     } catch (err) {
         console.error(err);

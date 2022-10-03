@@ -2,7 +2,7 @@ import connection from '../database/database.js';
 import { stripHtml } from 'string-strip-html';
 
 export async function listGames(req, res) {
-    const { name } = req.query;
+    const { name, order, desc } = req.query;
 
     try {
         let games = [];
@@ -16,7 +16,9 @@ export async function listGames(req, res) {
                 FROM games
                     JOIN categories ON games."categoryId"=categories.id
                     JOIN rentals ON games.id=rentals."gameId"
-                GROUP BY games.id, categories.name;
+                GROUP BY games.id, categories.name
+                ${order ? `ORDER BY ${order}` : ''}
+                ${desc ? `DESC` : ''};
             `);
         } else {
             games = await connection.query(`
@@ -28,7 +30,9 @@ export async function listGames(req, res) {
                 JOIN categories ON games."categoryId"=categories.id
                 JOIN rentals ON games.id=rentals."gameId"
             WHERE games.name ILIKE $1
-            GROUP BY games.id, categories.name;
+            GROUP BY games.id, categories.name
+            ${order ? `ORDER BY ${order}` : ''}
+            ${desc ? `DESC` : ''};
             `, [name + '%']);
         }
 

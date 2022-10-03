@@ -2,7 +2,7 @@ import connection from '../database/database.js';
 import dayjs from 'dayjs';
 
 export async function listAllRentals(req, res) {
-    const { customerId, gameId } = req.query;
+    const { customerId, gameId, order, desc } = req.query;
 
     try {
         let rentals = [];
@@ -20,10 +20,33 @@ export async function listAllRentals(req, res) {
                         'categoryId', games."categoryId",
                         'categoryName', (SELECT categories.name FROM categories WHERE games."categoryId"=categories.id)
                     ) as game
+                FROM rentals
+                    JOIN customers ON rentals."customerId"=customers.id
+                    JOIN games ON rentals."gameId"=games.id
+                ${order ? `ORDER BY ${order}` : ''}
+                ${desc ? `DESC` : ''};
+            `);
+        } else if (customerId && gameId) {
+            rentals = await connection.query(`
+                SELECT 
+                    rentals.*,
+                    json_build_object(
+                        'id', customers.id,
+                        'name', customers.name
+                    ) as customer,
+                    json_build_object(
+                        'id', games.id,
+                        'name', games.name,
+                        'categoryId', games."categoryId",
+                        'categoryName', (SELECT categories.name FROM categories WHERE games."categoryId"=categories.id)
+                    ) as game
                     FROM rentals
                         JOIN customers ON rentals."customerId"=customers.id
-                        JOIN games ON rentals."gameId"=games.id;
-            `);
+                        JOIN games ON rentals."gameId"=games.id
+                WHERE rentals."customerId"=$1 AND rentals."gameId"=$2
+                ${order ? `ORDER BY ${order}` : ''}
+                ${desc ? `DESC` : ''};
+            `, [customerId, gameId]);
         } else {
             rentals = await connection.query(`
                 SELECT 
@@ -41,7 +64,9 @@ export async function listAllRentals(req, res) {
                     FROM rentals
                         JOIN customers ON rentals."customerId"=customers.id
                         JOIN games ON rentals."gameId"=games.id
-                WHERE rentals."customerId"=$1 OR rentals."gameId"=$2;
+                WHERE rentals."customerId"=$1 OR rentals."gameId"=$2
+                ${order ? `ORDER BY ${order}` : ''}
+                ${desc ? `DESC` : ''};
             `, [customerId, gameId]);
         }
 
