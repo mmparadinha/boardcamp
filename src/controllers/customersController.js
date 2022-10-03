@@ -41,7 +41,7 @@ export async function listSingleCustomer(req, res) {
             return res.sendStatus(404);
         }
 
-        res.send(customer.rows);
+        res.send(customer.rows[0]);
 
     } catch (err) {
         console.error(err);

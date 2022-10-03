@@ -2,19 +2,19 @@ import connection from '../database/database.js';
 import { stripHtml } from 'string-strip-html';
 
 export async function listGames(req, res) {
-    const gameName = stripHtml(req.query.name).result;
+    const { name } = req.query;
 
     try {
         let games = [];
 
-        if (!gameName) {
+        if (!name) {
             games = await connection.query(`
                 SELECT games.*, categories.name as "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id;
             `);
         } else {
             games = await connection.query(`
                 SELECT games.*, categories.name as "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id WHERE LOWER(games.name) LIKE LOWER($1);
-            `, [gameName + '%']);
+            `, [name + '%']);
         }
 
         if (!games.rows[0]) {
