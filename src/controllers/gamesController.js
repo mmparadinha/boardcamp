@@ -9,11 +9,26 @@ export async function listGames(req, res) {
 
         if (!name) {
             games = await connection.query(`
-                SELECT games.*, categories.name as "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id;
+                SELECT
+                    games.*,
+                    categories.name AS "categoryName",
+                    COUNT("gameId") AS "rentalsCount"
+                FROM games
+                    JOIN categories ON games."categoryId"=categories.id
+                    JOIN rentals ON games.id=rentals."gameId"
+                GROUP BY games.id, categories.name;
             `);
         } else {
             games = await connection.query(`
-                SELECT games.*, categories.name as "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id WHERE LOWER(games.name) LIKE LOWER($1);
+            SELECT
+                games.*,
+                categories.name AS "categoryName",
+                COUNT("gameId") AS "rentalsCount"
+            FROM games
+                JOIN categories ON games."categoryId"=categories.id
+                JOIN rentals ON games.id=rentals."gameId"
+            WHERE games.name ILIKE $1
+            GROUP BY games.id, categories.name;
             `, [name + '%']);
         }
 

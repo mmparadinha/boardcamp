@@ -19,7 +19,8 @@ export async function listAllRentals(req, res) {
                         'name', games.name,
                         'categoryId', games."categoryId",
                         'categoryName', (SELECT categories.name FROM categories WHERE games."categoryId"=categories.id)
-                    ) as game FROM rentals
+                    ) as game
+                    FROM rentals
                         JOIN customers ON rentals."customerId"=customers.id
                         JOIN games ON rentals."gameId"=games.id;
             `);
@@ -36,7 +37,8 @@ export async function listAllRentals(req, res) {
                         'name', games.name,
                         'categoryId', games."categoryId",
                         'categoryName', (SELECT categories.name FROM categories WHERE games."categoryId"=categories.id)
-                    ) as game FROM rentals
+                    ) as game
+                    FROM rentals
                         JOIN customers ON rentals."customerId"=customers.id
                         JOIN games ON rentals."gameId"=games.id
                 WHERE rentals."customerId"=$1 OR rentals."gameId"=$2;

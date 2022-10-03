@@ -9,11 +9,20 @@ export async function listAllCustomers(req, res) {
 
         if (!cpf) {
             customers = await connection.query(`
-                SELECT * FROM customers;
+                SELECT
+                    customers.*,
+                    COUNT("customerId") AS "rentalsCount"
+                FROM rentals JOIN customers ON customers.id=rentals."customerId"
+                GROUP BY customers.id;
             `);
         } else {
             customers = await connection.query(`
-                SELECT * FROM customers WHERE customers.cpf LIKE $1;
+                SELECT
+                    customers.*,
+                    COUNT("customerId") AS "rentalsCount"
+                FROM rentals JOIN customers ON customers.id=rentals."customerId"
+                WHERE customers.cpf LIKE $1
+                GROUP BY customers.id;
             `, [cpf + '%']);
         }
 
@@ -41,7 +50,14 @@ export async function listSingleCustomer(req, res) {
             return res.sendStatus(404);
         }
 
-        res.send(customer.rows[0]);
+        const rentalsCount = await connection.query(`
+            SELECT COUNT("customerId") FROM rentals WHERE rentals."customerId"=$1;
+        `, [id]);
+
+        res.send({
+            ...customer.rows[0],
+            rentalsCount: rentalsCount.rows[0].count
+        });
 
     } catch (err) {
         console.error(err);
