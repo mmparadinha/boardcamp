@@ -178,3 +178,26 @@ export async function deleteRental(req, res) {
         res.sendStatus(500);
     }
 }
+
+export async function getRevenue(req, res) {
+
+    try {
+        const rentals = await connection.query(`
+            SELECT * FROM rentals;
+        `);
+
+        const revenue = await connection.query(`
+            SELECT SUM("originalPrice") + SUM("delayFee") as sum, AVG("originalPrice") + SUM("delayFee") as avg FROM rentals;
+        `);
+
+        res.send({
+            revenue: Number(revenue.rows[0].sum),
+            rentals: rentals.rows.length,
+            average: Math.ceil(Number(revenue.rows[0].avg))
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+}
