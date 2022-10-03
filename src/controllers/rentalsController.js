@@ -2,7 +2,7 @@ import connection from '../database/database.js';
 import dayjs from 'dayjs';
 
 export async function listAllRentals(req, res) {
-    const { customerId, gameId, order, desc } = req.query;
+    const { customerId, gameId, order, desc, status } = req.query;
 
     try {
         let rentals = [];
@@ -23,6 +23,7 @@ export async function listAllRentals(req, res) {
                 FROM rentals
                     JOIN customers ON rentals."customerId"=customers.id
                     JOIN games ON rentals."gameId"=games.id
+                ${status ? `WHERE "returnDate" ${status === 'open' ? 'IS NULL' : 'IS NOT NULL' }` : ''}
                 ${order ? `ORDER BY ${order}` : ''}
                 ${desc ? `DESC` : ''};
             `);
@@ -44,6 +45,7 @@ export async function listAllRentals(req, res) {
                         JOIN customers ON rentals."customerId"=customers.id
                         JOIN games ON rentals."gameId"=games.id
                 WHERE rentals."customerId"=$1 AND rentals."gameId"=$2
+                ${status ? `AND "returnDate" ${status === 'open' ? 'IS NULL' : 'IS NOT NULL' }` : ''}
                 ${order ? `ORDER BY ${order}` : ''}
                 ${desc ? `DESC` : ''};
             `, [customerId, gameId]);
@@ -64,7 +66,8 @@ export async function listAllRentals(req, res) {
                     FROM rentals
                         JOIN customers ON rentals."customerId"=customers.id
                         JOIN games ON rentals."gameId"=games.id
-                WHERE rentals."customerId"=$1 OR rentals."gameId"=$2
+                WHERE (rentals."customerId"=$1 OR rentals."gameId"=$2)
+                ${status ? `AND "returnDate" ${status === 'open' ? 'IS NULL' : 'IS NOT NULL' }` : ''}
                 ${order ? `ORDER BY ${order}` : ''}
                 ${desc ? `DESC` : ''};
             `, [customerId, gameId]);
