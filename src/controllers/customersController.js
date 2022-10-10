@@ -12,7 +12,7 @@ export async function listAllCustomers(req, res) {
                 SELECT
                     customers.*,
                     COUNT("customerId") AS "rentalsCount"
-                FROM rentals JOIN customers ON customers.id=rentals."customerId"
+                FROM rentals RIGHT JOIN customers ON customers.id=rentals."customerId"
                 GROUP BY customers.id
                     ${order ? `ORDER BY ${order}` : ''}
                     ${desc ? `DESC` : ''}
@@ -24,7 +24,7 @@ export async function listAllCustomers(req, res) {
                 SELECT
                     customers.*,
                     COUNT("customerId") AS "rentalsCount"
-                FROM rentals JOIN customers ON customers.id=rentals."customerId"
+                FROM rentals RIGHT JOIN customers ON customers.id=rentals."customerId"
                 WHERE customers.cpf LIKE $1
                 GROUP BY customers.id
                     ${order ? `ORDER BY ${order}` : ''}
@@ -32,10 +32,6 @@ export async function listAllCustomers(req, res) {
                     ${limit ? `LIMIT ${limit}` : ''}
                     ${offset ? `OFFSET ${offset}` : ''};
             `, [cpf + '%']);
-        }
-
-        if (!customers.rows[0]) {
-            return res.sendStatus(404);
         }
 
         res.send(customers.rows);

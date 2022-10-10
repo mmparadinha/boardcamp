@@ -15,7 +15,7 @@ export async function listGames(req, res) {
                     COUNT("gameId") AS "rentalsCount"
                 FROM games
                     JOIN categories ON games."categoryId"=categories.id
-                    JOIN rentals ON games.id=rentals."gameId"
+                    LEFT JOIN rentals ON games.id=rentals."gameId"
                 GROUP BY games.id, categories.name
                     ${order ? `ORDER BY ${order}` : ''}
                     ${desc ? `DESC` : ''}
@@ -30,7 +30,7 @@ export async function listGames(req, res) {
                 COUNT("gameId") AS "rentalsCount"
             FROM games
                 JOIN categories ON games."categoryId"=categories.id
-                JOIN rentals ON games.id=rentals."gameId"
+                LEFT JOIN rentals ON games.id=rentals."gameId"
             WHERE games.name ILIKE $1
             GROUP BY games.id, categories.name
                 ${order ? `ORDER BY ${order}` : ''}
